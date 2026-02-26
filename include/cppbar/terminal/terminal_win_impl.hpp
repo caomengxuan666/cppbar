@@ -1,6 +1,5 @@
 #ifdef _WIN32
 
-#include "../include/cppbar/terminal/terminal_win.hpp"
 #include <io.h>
 #include <fcntl.h>
 
@@ -9,18 +8,15 @@ namespace terminal {
 namespace win {
 
 namespace {
-HANDLE g_stdout_handle = INVALID_HANDLE_VALUE;
-bool g_ansi_enabled = false;
-}  // namespace
-
-HANDLE Win32Terminal::get_stdout_handle() {
+inline HANDLE get_stdout_handle() {
+    static HANDLE g_stdout_handle = INVALID_HANDLE_VALUE;
     if (g_stdout_handle == INVALID_HANDLE_VALUE) {
         g_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
     }
     return g_stdout_handle;
 }
 
-bool Win32Terminal::is_vt100_supported() {
+inline bool is_vt100_supported() {
     HANDLE h = get_stdout_handle();
     if (h == INVALID_HANDLE_VALUE) {
         return false;
@@ -34,7 +30,7 @@ bool Win32Terminal::is_vt100_supported() {
     return (mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0;
 }
 
-void Win32Terminal::enable_vt100_mode() {
+inline void enable_vt100_mode() {
     HANDLE h = get_stdout_handle();
     if (h == INVALID_HANDLE_VALUE) {
         return;
@@ -45,24 +41,36 @@ void Win32Terminal::enable_vt100_mode() {
         mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         mode |= DISABLE_NEWLINE_AUTO_RETURN;
         SetConsoleMode(h, mode);
-        g_ansi_enabled = true;
     }
 }
+}  // namespace
 
-bool Win32Terminal::init() {
+inline HANDLE Win32Terminal::get_stdout_handle() {
+    return ::get_stdout_handle();
+}
+
+inline bool Win32Terminal::is_vt100_supported() {
+    return ::is_vt100_supported();
+}
+
+inline void Win32Terminal::enable_vt100_mode() {
+    ::enable_vt100_mode();
+}
+
+inline bool Win32Terminal::init() {
     enable_vt100_mode();
-    return g_ansi_enabled;
+    return is_vt100_supported();
 }
 
-bool Win32Terminal::supports_ansi() {
-    return g_ansi_enabled || is_vt100_supported();
+inline bool Win32Terminal::supports_ansi() {
+    return is_vt100_supported();
 }
 
-bool Win32Terminal::supports_unicode() {
+inline bool Win32Terminal::supports_unicode() {
     return true;
 }
 
-int Win32Terminal::get_width() {
+inline int Win32Terminal::get_width() {
     HANDLE h = get_stdout_handle();
     if (h == INVALID_HANDLE_VALUE) {
         return 80;
@@ -76,7 +84,7 @@ int Win32Terminal::get_width() {
     return 80;
 }
 
-int Win32Terminal::get_height() {
+inline int Win32Terminal::get_height() {
     HANDLE h = get_stdout_handle();
     if (h == INVALID_HANDLE_VALUE) {
         return 24;
@@ -90,7 +98,7 @@ int Win32Terminal::get_height() {
     return 24;
 }
 
-void Win32Terminal::set_cursor_position(int row, int col) {
+inline void Win32Terminal::set_cursor_position(int row, int col) {
     if (supports_ansi()) {
         printf("\033[%d;%dH", row + 1, col + 1);
     } else {
@@ -102,7 +110,7 @@ void Win32Terminal::set_cursor_position(int row, int col) {
     }
 }
 
-void Win32Terminal::move_cursor_up(int lines) {
+inline void Win32Terminal::move_cursor_up(int lines) {
     if (supports_ansi()) {
         printf("\033[%dA", lines);
     } else {
@@ -118,7 +126,7 @@ void Win32Terminal::move_cursor_up(int lines) {
     }
 }
 
-void Win32Terminal::move_cursor_down(int lines) {
+inline void Win32Terminal::move_cursor_down(int lines) {
     if (supports_ansi()) {
         printf("\033[%dB", lines);
     } else {
@@ -134,7 +142,7 @@ void Win32Terminal::move_cursor_down(int lines) {
     }
 }
 
-void Win32Terminal::clear_line() {
+inline void Win32Terminal::clear_line() {
     if (supports_ansi()) {
         printf("\033[2K\r");
     } else {
@@ -151,7 +159,7 @@ void Win32Terminal::clear_line() {
     }
 }
 
-void Win32Terminal::hide_cursor() {
+inline void Win32Terminal::hide_cursor() {
     if (supports_ansi()) {
         printf("\033[?25l");
     } else {
@@ -166,7 +174,7 @@ void Win32Terminal::hide_cursor() {
     }
 }
 
-void Win32Terminal::show_cursor() {
+inline void Win32Terminal::show_cursor() {
     if (supports_ansi()) {
         printf("\033[?25h");
     } else {
@@ -181,19 +189,19 @@ void Win32Terminal::show_cursor() {
     }
 }
 
-void Win32Terminal::enable_alternate_screen() {
+inline void Win32Terminal::enable_alternate_screen() {
     if (supports_ansi()) {
         printf("\033[?1049h");
     }
 }
 
-void Win32Terminal::disable_alternate_screen() {
+inline void Win32Terminal::disable_alternate_screen() {
     if (supports_ansi()) {
         printf("\033[?1049l");
     }
 }
 
-void Win32Terminal::set_ansi_colors(bool enable) {
+inline void Win32Terminal::set_ansi_colors(bool enable) {
     if (enable) {
         enable_vt100_mode();
     }

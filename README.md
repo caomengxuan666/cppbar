@@ -64,6 +64,37 @@ auto& bar2 = *multi.add_bar(200, "Task 2");
 multi.start();
 ```
 
+## Single Header Usage
+
+For quick integration without CMake, you can use the single header version:
+
+```bash
+# Generate the single header file (requires quom)
+quom include/cppbar/progress_bar.hpp cppbar.hpp -I include
+
+# Or use the CMake target
+cmake --build build --target single_header
+```
+
+Then simply include the generated file in your project:
+
+```cpp
+#include "cppbar.hpp"
+
+int main() {
+    cppbar::ProgressBar bar(100);
+    bar.set_title("Downloading");
+    bar.start();
+
+    for (int i = 0; i <= 100; ++i) {
+        // Do some work
+        bar.tick();
+    }
+
+    bar.finish("Done!");
+}
+```
+
 ## Installation
 
 ### Header-Only Integration

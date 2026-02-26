@@ -18,29 +18,18 @@ cmakehub_use(compile_options)
 # Sanitizers for Debug builds only
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     cmakehub_use(sanitizers)
-    cmakehub_use(coverage)
+    # cmakehub_use(coverage_cg)  # Temporarily disabled due to compatibility issues
 endif()
 
 # ===== Header-only library setup =====
-# Create library (with some source files for platform implementations)
-add_library(${PROJECT_NAME})
+# CppBar is now a true header-only library
+add_library(${PROJECT_NAME} INTERFACE)
 
 # Set include directory
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
-
-# Add source files for platform-specific implementations
-target_sources(${PROJECT_NAME} PRIVATE
-    src/terminal_unix.cpp
-    src/terminal_win.cpp
-)
-
-# Link with required system libraries
-if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PUBLIC)
-endif()
 
 # Apply compiler warnings to targets that use this library
 target_compile_options(${PROJECT_NAME} INTERFACE
@@ -90,4 +79,22 @@ install(TARGETS ${PROJECT_NAME}
 install(EXPORT ${PROJECT_NAME}-targets
     FILE ${PROJECT_NAME}-config.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# ===== Single Header Generation =====
+# Custom target to generate single header file using quom
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+    COMMAND quom
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+        -I ${CMAKE_CURRENT_SOURCE_DIR}/include
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
+    COMMENT "Generating single header file cppbar.hpp using quom"
+    VERBATIM
+)
+
+add_custom_target(single_header
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+    COMMENT "Single header file generation complete"
 )

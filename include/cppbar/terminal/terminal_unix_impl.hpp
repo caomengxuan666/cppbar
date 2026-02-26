@@ -1,6 +1,5 @@
 #if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 
-#include "../include/cppbar/terminal/terminal_unix.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -11,12 +10,12 @@ namespace cppbar {
 namespace terminal {
 namespace unix_term {
 
-std::string UnixTerminal::get_env(const char* name) {
+inline std::string UnixTerminal::get_env(const char* name) {
     const char* value = std::getenv(name);
     return value ? value : "";
 }
 
-bool UnixTerminal::is_color_term() {
+inline bool UnixTerminal::is_color_term() {
     std::string term = get_env("TERM");
     std::string colorterm = get_env("COLORTERM");
 
@@ -34,11 +33,11 @@ bool UnixTerminal::is_color_term() {
     return false;
 }
 
-bool UnixTerminal::supports_ansi() {
+inline bool UnixTerminal::supports_ansi() {
     return is_color_term();
 }
 
-bool UnixTerminal::supports_unicode() {
+inline bool UnixTerminal::supports_unicode() {
     std::string lang = get_env("LANG");
     std::string lc_all = get_env("LC_ALL");
     std::string lc_ctype = get_env("LC_CTYPE");
@@ -51,7 +50,7 @@ bool UnixTerminal::supports_unicode() {
     return locale.find("UTF-8") != std::string::npos || locale.find("utf8") != std::string::npos;
 }
 
-int UnixTerminal::get_width() {
+inline int UnixTerminal::get_width() {
     struct winsize w;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
         return w.ws_col;
@@ -59,7 +58,7 @@ int UnixTerminal::get_width() {
     return 80;
 }
 
-int UnixTerminal::get_height() {
+inline int UnixTerminal::get_height() {
     struct winsize w;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
         return w.ws_row;
@@ -67,35 +66,35 @@ int UnixTerminal::get_height() {
     return 24;
 }
 
-void UnixTerminal::set_cursor_position(int row, int col) {
+inline void UnixTerminal::set_cursor_position(int row, int col) {
     printf("\033[%d;%dH", row + 1, col + 1);
 }
 
-void UnixTerminal::move_cursor_up(int lines) {
+inline void UnixTerminal::move_cursor_up(int lines) {
     printf("\033[%dA", lines);
 }
 
-void UnixTerminal::move_cursor_down(int lines) {
+inline void UnixTerminal::move_cursor_down(int lines) {
     printf("\033[%dB", lines);
 }
 
-void UnixTerminal::clear_line() {
+inline void UnixTerminal::clear_line() {
     printf("\033[2K\r");
 }
 
-void UnixTerminal::hide_cursor() {
+inline void UnixTerminal::hide_cursor() {
     printf("\033[?25l");
 }
 
-void UnixTerminal::show_cursor() {
+inline void UnixTerminal::show_cursor() {
     printf("\033[?25h");
 }
 
-void UnixTerminal::enable_alternate_screen() {
+inline void UnixTerminal::enable_alternate_screen() {
     printf("\033[?1049h");
 }
 
-void UnixTerminal::disable_alternate_screen() {
+inline void UnixTerminal::disable_alternate_screen() {
     printf("\033[?1049l");
 }
 

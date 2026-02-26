@@ -3,6 +3,15 @@
 #include <cstdint>
 #include <string>
 
+// Include platform-specific headers
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+#include "terminal_unix.hpp"
+#endif
+
+#ifdef _WIN32
+#include "terminal_win.hpp"
+#endif
+
 namespace cppbar {
 namespace terminal {
 
@@ -48,3 +57,7 @@ void disable_alternate_screen();
 
 }  // namespace terminal
 }  // namespace cppbar
+
+// Include platform-specific implementations
+#include "terminal_unix_impl.hpp"
+#include "terminal_win_impl.hpp"
