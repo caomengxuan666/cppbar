@@ -48,7 +48,6 @@ Makefile
 
 # CMakeHub
 .cmakehub/
-modules.json
 
 # IDE
 .vscode/
