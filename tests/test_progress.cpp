@@ -602,15 +602,15 @@ void test_terminal_detection() {
     int width = terminal::get_width();
     int height = terminal::get_height();
 
-    assert(width > 0);
-    assert(height > 0);
+    assert(width >= 80);
+    assert(height >= 24);
 }
 
 void test_terminal_info() {
     auto info = terminal::get_terminal_info();
 
-    assert(info.width > 0);
-    assert(info.height > 0);
+    assert(info.width >= 80);
+    assert(info.height >= 24);
 }
 
 void test_utility_clock() {
