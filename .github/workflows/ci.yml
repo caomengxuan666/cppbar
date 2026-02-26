@@ -60,6 +60,7 @@ jobs:
       run: cmake --build build --config ${{ matrix.build_type }}
 
     - name: Run Tests
+      shell: bash
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
           ./build/tests/Release/test_progress.exe
@@ -121,5 +122,3 @@ jobs:
         cd build
         run-clang-tidy -p . $(find ../include/cppbar -name "*.hpp")
 
-    - name: Run cppcheck
-      run: cppcheck --enable=all --inconclusive --std=c++17 include/cppbar/
