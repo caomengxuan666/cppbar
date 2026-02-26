@@ -1,3 +1,4 @@
+#undef RGB
 #pragma once
 
 #include <cstdint>
