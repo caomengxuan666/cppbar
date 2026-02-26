@@ -80,7 +80,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd build
-        run-clang-tidy -p . include/cppbar/**/*.hpp
+        find ../include/cppbar -name "*.hpp" -exec run-clang-tidy -p . {} \;
 
   format-check:
     runs-on: ubuntu-latest
