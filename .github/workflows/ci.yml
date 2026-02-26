@@ -63,7 +63,11 @@ jobs:
       shell: bash
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          ./build/tests/Debug/test_progress.exe
+          if [ "${{ matrix.build_type }}" = "Release" ]; then
+            ./build/tests/Release/test_progress.exe
+          else
+            ./build/tests/Debug/test_progress.exe
+          fi
         else
           ./build/tests/test_progress
         fi
