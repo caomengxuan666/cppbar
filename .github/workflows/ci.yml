@@ -48,6 +48,7 @@ jobs:
         choco install cmake ninja
 
     - name: Configure CMake
+      shell: bash
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
@@ -80,7 +81,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd build
-        find ../include/cppbar -name "*.hpp" -exec run-clang-tidy -p . {} \;
+        run-clang-tidy -p . $(find ../include/cppbar -name "*.hpp")
 
   format-check:
     runs-on: ubuntu-latest
@@ -118,7 +119,7 @@ jobs:
     - name: Run clang-tidy
       run: |
         cd build
-        run-clang-tidy -p . include/cppbar/**/*.hpp
+        run-clang-tidy -p . $(find ../include/cppbar -name "*.hpp")
 
     - name: Run cppcheck
       run: cppcheck --enable=all --inconclusive --std=c++17 include/cppbar/
