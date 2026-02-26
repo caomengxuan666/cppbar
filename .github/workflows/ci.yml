@@ -122,4 +122,4 @@ jobs:
         run-clang-tidy -p . $(find ../include/cppbar -name "*.hpp")
 
     - name: Run cppcheck
-      run: cppcheck --enable=all --inconclusive --std=c++17 ../include/cppbar/
+      run: cppcheck --enable=all --inconclusive --std=c++17 include/cppbar/

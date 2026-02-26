@@ -46,15 +46,15 @@ inline void enable_vt100_mode() {
 }  // namespace
 
 inline HANDLE Win32Terminal::get_stdout_handle() {
-    return get_stdout_handle();::get_stdout_handle();
+    return get_stdout_handle();
 }
 
 inline bool Win32Terminal::is_vt100_supported() {
-    return is_vt100_supported();100_supported();
+    return is_vt100_supported();
 }
 
 inline void Win32Terminal::enable_vt100_mode() {
-    enable_vt100_mode();t100_mode();
+    enable_vt100_mode();
 }
 
 inline bool Win32Terminal::init() {
