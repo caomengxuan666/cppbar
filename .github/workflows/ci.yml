@@ -73,13 +73,14 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage -fprofile-arcs -ftest-coverage" ..
         cmake --build .
         ./tests/test_progress
-        gcov -r CMakeFiles/cppbar.dir/src/*.gcno
+        # Note: Header-only library doesn't generate coverage for library code
+        echo "Code coverage skipped for header-only library"
 
     - name: Run clang-tidy
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd build
-        run-clang-tidy -p . src/*.cpp include/cppbar/**/*.hpp
+        run-clang-tidy -p . include/cppbar/**/*.hpp
 
   format-check:
     runs-on: ubuntu-latest
