@@ -5,6 +5,15 @@ project(cppbar VERSION 1.0.0 LANGUAGES CXX)
 # Include CMakeHub loader
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hub/loader.cmake)
 
+# Set cache directory (optional)
+set(CMH_CACHE_DIR "$ENV{HOME}/.cmakehub/cache")
+
+# Enable verbose output (optional)
+set(CMAKEHUB_VERBOSE ON)
+
+# Set version check mode (STRICT, WARNING, SILENT)
+set(CMAKEHUB_VERSION_CHECK_MODE "SILENT")
+
 # Use CMakeHub modules for code quality
 cmakehub_use(cpp_standards)
 cmakehub_use(compiler_warnings)
@@ -15,9 +24,13 @@ cmakehub_use(clang_tidy_tools)
 cmakehub_use(lto_optimization)
 cmakehub_use(compile_options)
 
+
 # Sanitizers for Debug builds only
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    cmakehub_use(sanitizers)
+    cmakehub_use(sanitizers     
+        ADDRESS_SANITIZER ON
+        UNDEFINED_SANITIZER ON
+    )
     # cmakehub_use(coverage_cg)  # Temporarily disabled due to compatibility issues
 endif()
 

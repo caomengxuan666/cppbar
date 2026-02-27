@@ -26,8 +26,12 @@ public:
 
     void tick(size_t index, int64_t amount = 1);
 
+    ProgressBar& operator[](size_t index);
+
 private:
     void move_up(int lines);
+    void move_down(int lines);
+    void erase_line();
 
     std::vector<std::unique_ptr<ProgressBar>> bars_;
     std::atomic<bool> started_;
@@ -91,6 +95,14 @@ inline void MultiProgress::finish() {
     }
 }
 
+inline ProgressBar& MultiProgress::operator[](size_t index) {
+    if (index >= bars_.size()) {
+        throw std::out_of_range("MultiProgress index out of range");
+    }
+    std::lock_guard<std::mutex> lock(refresh_mutex_);
+    return *bars_[index];
+}
+
 inline void MultiProgress::refresh() {
     if (!started_) {
         return;
@@ -106,7 +118,7 @@ inline void MultiProgress::refresh() {
     std::lock_guard<std::mutex> lock(refresh_mutex_);
 
     if (first_refresh_.load()) {
-        // First refresh: print all lines and move cursor back up
+        // First refresh: print all lines
         for (size_t i = 0; i < bars_.size(); ++i) {
             std::cout << bars_[i]->render();
             if (i < bars_.size() - 1) {
@@ -114,18 +126,30 @@ inline void MultiProgress::refresh() {
             }
         }
         std::cout << std::flush;
-
-        // Move cursor back up to the first bar
-        if (bars_.size() > 1) {
-            std::cout << "\033[" << (bars_.size() - 1) << "A" << std::flush;
-        }
-
         first_refresh_.store(false);
         return;
     }
 
-    // Subsequent refreshes: move up and reprint
-    move_up(static_cast<int>(bars_.size()));
+    // Subsequent refreshes: move up to first line, then erase and reprint
+    int num_bars = static_cast<int>(bars_.size());
+    
+    // First, move up to the first bar
+    if (num_bars > 1) {
+        move_up(num_bars - 1);
+    }
+    
+    // Then clear current line and all lines below
+    for (int i = 0; i < num_bars; ++i) {
+        erase_line();
+        if (i < num_bars - 1) {
+            move_down(1);
+        }
+    }
+    
+    // Move back to the first line
+    if (num_bars > 1) {
+        move_up(num_bars - 1);
+    }
 
     // Print all progress bars
     for (size_t i = 0; i < bars_.size(); ++i) {
@@ -151,7 +175,18 @@ inline void MultiProgress::move_up(int lines) {
     if (lines <= 0) {
         return;
     }
-    std::cout << "\033[" << lines << "A";
+    terminal::move_cursor_up(lines);
+}
+
+inline void MultiProgress::move_down(int lines) {
+    if (lines <= 0) {
+        return;
+    }
+    terminal::move_cursor_down(lines);
+}
+
+inline void MultiProgress::erase_line() {
+    terminal::clear_line();
 }
 
 }  // namespace cppbar
