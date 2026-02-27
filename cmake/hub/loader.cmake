@@ -305,6 +305,8 @@ function(cmakehub_use module_name)
 
     # Setup cache directory with version to avoid conflicts
     set(module_cache_dir "${CMH_CACHE_DIR}/${module_name}/${VERSION}")
+    # Normalize path to use forward slashes (fixes Windows escape issues)
+    file(TO_CMAKE_PATH "${module_cache_dir}" module_cache_dir)
     file(MAKE_DIRECTORY ${module_cache_dir})
     
     # Check if module is already cached
@@ -712,6 +714,8 @@ function(cmakehub_cache_clear module_name)
         # Clear specific module cache
         cmakehub_log(STATUS "Clearing cache for module: ${module_name}")
         set(module_cache_dir "${CMH_CACHE_DIR}/${module_name}")
+        # Normalize path to use forward slashes (fixes Windows escape issues)
+        file(TO_CMAKE_PATH "${module_cache_dir}" module_cache_dir)
         if(EXISTS ${module_cache_dir})
             file(REMOVE_RECURSE ${module_cache_dir})
             message(STATUS "Cache for '${module_name}' cleared successfully")
