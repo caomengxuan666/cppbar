@@ -99,20 +99,18 @@ install(EXPORT ${PROJECT_NAME}-targets
 )
 
 # ===== Single Header Generation =====
-# Custom target to generate single header file using quom
+# Use amalgamate.py to generate single header file with LICENSE prologue
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
-    COMMAND quom
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
-        -I ${CMAKE_CURRENT_SOURCE_DIR}/include
-    COMMAND ${CMAKE_COMMAND} -E cat
-        ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
-        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
-        > ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
+    COMMAND ${Python_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.py
+        -c ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.json
+        -s ${CMAKE_CURRENT_SOURCE_DIR}
+        -p ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
-    COMMENT "Generating single header file cppbar.hpp using quom"
+            ${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.json
+    COMMENT "Generating single header file cppbar.hpp using amalgamate.py"
     VERBATIM
 )
 

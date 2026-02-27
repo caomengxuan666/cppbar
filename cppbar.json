@@ -1,0 +1,1 @@
+{"project": "CppBar", "target": "cppbar.hpp", "sources": ["include/cppbar/progress_bar.hpp"], "include_paths": ["include"]}
