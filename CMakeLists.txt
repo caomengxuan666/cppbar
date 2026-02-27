@@ -5,8 +5,12 @@ project(cppbar VERSION 1.0.0 LANGUAGES CXX)
 # Include CMakeHub loader
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hub/loader.cmake)
 
-# Set cache directory (optional)
-set(CMH_CACHE_DIR "$ENV{HOME}/.cmakehub/cache")
+# Set cache directory (optional) - use forward slashes for cross-platform compatibility
+if(WIN32)
+    set(CMH_CACHE_DIR "$ENV{USERPROFILE}/.cmakehub/cache")
+else()
+    set(CMH_CACHE_DIR "$ENV{HOME}/.cmakehub/cache")
+endif()
 
 # Enable verbose output (optional)
 set(CMAKEHUB_VERBOSE ON)
