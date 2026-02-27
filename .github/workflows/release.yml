@@ -72,7 +72,8 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         body_path: ${{ steps.release_notes.outputs.notes_path }}
-        files: cppbar.hpp
+        files: |
+          cppbar.hpp
         draft: false
         prerelease: false
         generate_release_notes: false
