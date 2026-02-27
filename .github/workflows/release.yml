@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        # Extract version from tag
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        
+        # Get commit messages since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [ -n "$LAST_TAG" ]; then
+          COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --pretty=format:"- %s")
+        else
+          COMMITS=$(git log --oneline --pretty=format:"- %s")
+        fi
+        
+        # Create release notes
+        cat > release_notes.md << EOF
+        ## Release v${VERSION}
+        
+        ### Changes
+        ${COMMITS}
+        
+        ### Installation
+        \`\`\`bash
+        # Clone the repository
+        git clone https://github.com/caomengxuan666/cppbar.git
+        cd cppbar
+        
+        # Or download single header
+        curl -O https://raw.githubusercontent.com/caomengxuan666/cppbar/v${VERSION}/cppbar.hpp
+        \`\`\`
+        
+        ### Quick Start
+        \`\`\`cpp
+        #include "cppbar.hpp"
+        
+        int main() {
+            cppbar::ProgressBar bar(100);
+            bar.set_title("Downloading");
+            bar.start();
+            
+            for (int i = 0; i <= 100; ++i) {
+                // Do some work
+                bar.tick();
+            }
+            
+            bar.finish("Done!");
+        }
+        \`\`\`
+        EOF
+        
+        echo "notes_path=release_notes.md" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: ${{ steps.release_notes.outputs.notes_path }}
+        draft: false
+        prerelease: false
+        generate_release_notes: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
