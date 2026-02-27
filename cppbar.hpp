@@ -1,30 +1,40 @@
-MIT License
+﻿// clang-format off
 
-Copyright (c) 2026 CppBar Contributors
+/*
+ * MIT License
+ *
+ * Copyright (c) 2026 CppBar Contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// clang-format on
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+#pragma once
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.#pragma once
+// #include "terminal/terminal.hpp"
 
 #include <cstdint>
 #include <string>
 
 // Include platform-specific headers
-#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+// #include "terminal_unix.hpp"
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 
@@ -71,9 +81,7 @@ private:
 }  // namespace cppbar
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__unix__)
-#endif
-
-#ifdef _WIN32
+// #include "terminal_win.hpp"
 
 #ifdef _WIN32
 
@@ -126,7 +134,6 @@ private:
 }  // namespace cppbar
 
 #endif  // _WIN32
-#endif
 
 namespace cppbar {
 namespace terminal {
@@ -174,7 +181,10 @@ void disable_alternate_screen();
 }  // namespace terminal
 }  // namespace cppbar
 
-// Include platform-specific implementations
+// Include platform-specific implementations (only if not already included)
+#ifndef CPPBAR_TERMINAL_IMPL_INCLUDED
+#define CPPBAR_TERMINAL_IMPL_INCLUDED
+// #include "terminal_unix_impl.hpp"
 #if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 
 #include <cstdio>
@@ -281,6 +291,7 @@ inline void UnixTerminal::disable_alternate_screen() {
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 
+// #include "terminal_win_impl.hpp"
 #ifdef _WIN32
 
 #include <io.h>
@@ -466,6 +477,76 @@ inline void Win32Terminal::set_ansi_colors(bool /*enable*/) {
 }  // namespace cppbar
 
 #endif  // _WIN32
+#endif
+// #include "terminal/terminal_impl.hpp"
+
+// #include "terminal.hpp"
+
+#include <cstdint>
+#include <string>
+
+// Include platform-specific headers
+// #include "terminal_unix.hpp"
+
+// #include "terminal_win.hpp"
+
+namespace cppbar {
+namespace terminal {
+
+enum class Platform { Windows, Linux, MacOS, Unknown };
+
+struct TerminalInfo {
+    int width;
+    int height;
+    bool supports_ansi;
+    bool supports_unicode;
+    bool is_tty;
+};
+
+Platform get_platform();
+
+bool is_tty();
+
+bool supports_ansi();
+
+bool supports_unicode();
+
+int get_width();
+
+int get_height();
+
+TerminalInfo get_terminal_info();
+
+void set_cursor_position(int row, int col);
+
+void move_cursor_up(int lines);
+
+void move_cursor_down(int lines);
+
+void clear_line();
+
+void hide_cursor();
+
+void show_cursor();
+
+void enable_alternate_screen();
+
+void disable_alternate_screen();
+
+}  // namespace terminal
+}  // namespace cppbar
+
+// Include platform-specific implementations (only if not already included)
+#ifndef CPPBAR_TERMINAL_IMPL_INCLUDED
+#define CPPBAR_TERMINAL_IMPL_INCLUDED
+// #include "terminal_unix_impl.hpp"
+
+// #include "terminal_win_impl.hpp"
+
+#endif
+// #include "terminal_win.hpp"
+
+// #include "terminal_unix.hpp"
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 #include <unistd.h>
@@ -610,6 +691,60 @@ inline void disable_alternate_screen() {
 
 }  // namespace terminal
 }  // namespace cppbar
+// #include "style/style.hpp"
+
+#include <string>
+
+namespace cppbar {
+namespace style {
+
+struct StyleConfig {
+    std::string left_bracket;
+    std::string right_bracket;
+    std::string filled_char;
+    std::string empty_char;
+    std::string tip_char;
+
+    StyleConfig(const std::string& lb, const std::string& rb, const std::string& fc,
+                const std::string& ec, const std::string& tc)
+        : left_bracket(lb), right_bracket(rb), filled_char(fc), empty_char(ec), tip_char(tc) {}
+};
+
+class Style {
+public:
+    enum class Type { Unicode, Ascii, Braille };
+
+    Style() : type_(Type::Unicode) {}
+
+    explicit Style(Type type) : type_(type) {}
+
+    StyleConfig get_config() const;
+
+    void set_type(Type type) { type_ = type; }
+    Type get_type() const { return type_; }
+
+    static Style unicode() { return Style(Type::Unicode); }
+    static Style ascii() { return Style(Type::Ascii); }
+    static Style braille() { return Style(Type::Braille); }
+
+private:
+    Type type_;
+};
+
+struct PresetStyles {
+    static StyleConfig classic();
+    static StyleConfig modern();
+    static StyleConfig minimal();
+    static StyleConfig blocks();
+    static StyleConfig dots();
+    static StyleConfig squares();
+};
+
+}  // namespace style
+}  // namespace cppbar
+// #include "style/style_impl.hpp"
+
+// #include "style.hpp"
 
 #include <string>
 
@@ -702,6 +837,7 @@ inline StyleConfig PresetStyles::squares() {
 
 }  // namespace style
 }  // namespace cppbar
+// #include "color/color.hpp"
 #undef RGB
 
 #include <cstdint>
@@ -793,7 +929,100 @@ std::string reset_color();
 
 }  // namespace color
 }  // namespace cppbar
+// #include "color/color_impl.hpp"
 
+// #include "color.hpp"
+#undef RGB
+
+#include <cstdint>
+#include <string>
+
+namespace cppbar {
+namespace color {
+
+struct RGB {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+
+    constexpr RGB(uint8_t red, uint8_t green, uint8_t blue) : r(red), g(green), b(blue) {}
+
+    constexpr RGB() : r(0), g(0), b(0) {}
+
+    std::string to_ansi_foreground() const;
+    std::string to_ansi_background() const;
+};
+
+class Color {
+public:
+    enum class Named {
+        Black,
+        Red,
+        Green,
+        Yellow,
+        Blue,
+        Magenta,
+        Cyan,
+        White,
+        BrightBlack,
+        BrightRed,
+        BrightGreen,
+        BrightYellow,
+        BrightBlue,
+        BrightMagenta,
+        BrightCyan,
+        BrightWhite,
+        None
+    };
+
+    Color() : type_(Type::None) {}
+
+    Color(Named named) : type_(Type::Named), named_(named) {}
+
+    Color(uint8_t r, uint8_t g, uint8_t b) : type_(Type::RGB), rgb_(r, g, b) {}
+
+    Color(const RGB& rgb) : type_(Type::RGB), rgb_(rgb) {}
+
+    bool is_none() const { return type_ == Type::None; }
+
+    std::string to_ansi_foreground() const;
+    std::string to_ansi_background() const;
+
+    static Color from_256(uint8_t code);
+    static Color from_hex(const std::string& hex);
+
+    static constexpr RGB black() { return RGB(0, 0, 0); }
+    static constexpr RGB red() { return RGB(255, 0, 0); }
+    static constexpr RGB green() { return RGB(0, 255, 0); }
+    static constexpr RGB yellow() { return RGB(255, 255, 0); }
+    static constexpr RGB blue() { return RGB(0, 0, 255); }
+    static constexpr RGB magenta() { return RGB(255, 0, 255); }
+    static constexpr RGB cyan() { return RGB(0, 255, 255); }
+    static constexpr RGB white() { return RGB(255, 255, 255); }
+
+    static constexpr RGB bright_black() { return RGB(128, 128, 128); }
+    static constexpr RGB bright_red() { return RGB(255, 128, 128); }
+    static constexpr RGB bright_green() { return RGB(128, 255, 128); }
+    static constexpr RGB bright_yellow() { return RGB(255, 255, 128); }
+    static constexpr RGB bright_blue() { return RGB(128, 128, 255); }
+    static constexpr RGB bright_magenta() { return RGB(255, 128, 255); }
+    static constexpr RGB bright_cyan() { return RGB(128, 255, 255); }
+    static constexpr RGB bright_white() { return RGB(255, 255, 255); }
+
+private:
+    enum class Type { None, Named, RGB };
+    Type type_;
+    Named named_;
+    RGB rgb_;
+};
+
+std::string apply_color(const std::string& text, const Color& fg = Color(),
+                        const Color& bg = Color());
+
+std::string reset_color();
+
+}  // namespace color
+}  // namespace cppbar
 #include <sstream>
 
 namespace cppbar {
@@ -912,6 +1141,7 @@ inline std::string reset_color() {
 
 }  // namespace color
 }  // namespace cppbar
+// #include "animation/animation.hpp"
 
 #include <string>
 #include <vector>
@@ -1027,7 +1257,124 @@ Animation* none();
 
 }  // namespace animation
 }  // namespace cppbar
+// #include "animation/animation_impl.hpp"
 
+// #include "animation.hpp"
+
+#include <string>
+#include <vector>
+#include <cmath>
+
+namespace cppbar {
+namespace animation {
+
+class Animation {
+public:
+    Animation() : frame_count_(0), current_frame_(0), last_update_(0) {}
+
+    virtual ~Animation() = default;
+
+    virtual std::string get_frame() const = 0;
+    virtual void next_frame() = 0;
+    virtual void reset() = 0;
+    virtual Animation* clone() const = 0;
+
+    size_t get_frame_count() const { return frame_count_; }
+    size_t get_current_frame() const { return current_frame_; }
+
+protected:
+    size_t frame_count_;
+    size_t current_frame_;
+    size_t last_update_;
+};
+
+class PulseAnimation : public Animation {
+public:
+    PulseAnimation();
+
+    std::string get_frame() const override;
+    void next_frame() override;
+    void reset() override;
+    Animation* clone() const override;
+
+private:
+    std::vector<std::string> frames_;
+};
+
+class WaveAnimation : public Animation {
+public:
+    WaveAnimation();
+
+    std::string get_frame() const override;
+    void next_frame() override;
+    void reset() override;
+    Animation* clone() const override;
+
+private:
+    std::vector<std::string> frames_;
+};
+
+class BounceAnimation : public Animation {
+public:
+    BounceAnimation();
+
+    std::string get_frame() const override;
+    void next_frame() override;
+    void reset() override;
+    Animation* clone() const override;
+
+private:
+    std::vector<std::string> frames_;
+    bool moving_right_;
+};
+
+class GradientAnimation : public Animation {
+public:
+    GradientAnimation();
+
+    std::string get_frame() const override;
+    void next_frame() override;
+    void reset() override;
+    Animation* clone() const override;
+
+private:
+    std::vector<std::string> frames_;
+};
+
+class CycleAnimation : public Animation {
+public:
+    explicit CycleAnimation(const std::vector<std::string>& chars);
+
+    std::string get_frame() const override;
+    void next_frame() override;
+    void reset() override;
+    Animation* clone() const override;
+
+private:
+    std::vector<std::string> chars_;
+};
+
+class NoneAnimation : public Animation {
+public:
+    std::string get_frame() const override;
+    void next_frame() override;
+    void reset() override;
+    Animation* clone() const override;
+};
+
+namespace presets {
+
+Animation* pulse();
+Animation* wave();
+Animation* bounce();
+Animation* gradient();
+Animation* cycle(const std::vector<std::string>& chars);
+Animation* none();
+
+}  // namespace presets
+
+}  // namespace animation
+}  // namespace cppbar
 #include <algorithm>
 
 namespace cppbar {
@@ -1204,6 +1551,7 @@ inline Animation* none() {
 
 }  // namespace animation
 }  // namespace cppbar
+// #include "utils/clock.hpp"
 
 #include <chrono>
 
@@ -1273,6 +1621,7 @@ private:
 
 }  // namespace utils
 }  // namespace cppbar
+// #include "utils/format.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -1399,6 +1748,7 @@ public:
 
 }  // namespace utils
 }  // namespace cppbar
+// #include "utils/math.hpp"
 
 #include <algorithm>
 #include <string>
@@ -1611,7 +1961,8 @@ inline ProgressBar::ProgressBar(int64_t total)
     : total_(total), current_(0), title_(""), width_(40), fg_color_(), bg_color_(),
       style_(style::Style::Type::Unicode), animation_(nullptr), animation_owned_(false),
       show_percentage_(true), show_elapsed_(false), show_eta_(false), show_speed_(false),
-      started_(false), finished_(false), hidden_(false), multi_progress_mode_(false), last_update_(0) {}
+      started_(false), finished_(false), hidden_(false), multi_progress_mode_(false),
+      last_update_(0) {}
 
 inline ProgressBar::~ProgressBar() {
     if (started_ && !finished_) {

@@ -99,14 +99,23 @@ install(EXPORT ${PROJECT_NAME}-targets
 )
 
 # ===== Single Header Generation =====
-# Use amalgamate.py to generate single header file with LICENSE prologue
+# Use amalgamate.py to generate single header file
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
     COMMAND ${Python_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.py
         -c ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.json
         -s ${CMAKE_CURRENT_SOURCE_DIR}
-        -p ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+    COMMAND ${CMAKE_COMMAND} -E cat
+        ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+        > ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+    COMMAND ${CMAKE_COMMAND} -E remove -f
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
+    COMMAND clang-format -i ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.py
             ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.json
