@@ -104,8 +104,13 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
     COMMAND quom
         ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
         -I ${CMAKE_CURRENT_SOURCE_DIR}/include
+    COMMAND ${CMAKE_COMMAND} -E cat
+        ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+        ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
+        > ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_SOURCE_DIR}/cppbar.hpp.tmp
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/cppbar/progress_bar.hpp
     COMMENT "Generating single header file cppbar.hpp using quom"
     VERBATIM
